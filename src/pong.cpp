@@ -84,8 +84,7 @@ int game_state(char command, int score_left, int score_right) {
     int game = TRUE;
     if (score_left == END_GAME || score_right == END_GAME) {
         game = FALSE;
-    }
-    else if (command == END_COMMAND) {
+    } else if (command == END_COMMAND) {
         game = FALSE;
     }
     return game;
@@ -95,8 +94,7 @@ void congratulations(int score_left, int score_right) {
     cout << "\033[2J\033[H";
     if (score_left == END_GAME) {
         cout << "Congratulations Racket Left Player! You Win!" << endl;
-    }
-    else if (score_right == END_GAME) {
+    } else if (score_right == END_GAME) {
         cout << "Congratulations Racket Right Player! You Win!" << endl;
     }
 }
