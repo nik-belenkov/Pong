@@ -28,6 +28,9 @@ using namespace std;
 void draw_window(int score_left, int score_right, int racket_left, int racket_right, int ball_x, int ball_y);
 void draw_score(int x, int score_left, int score_right);
 int game_state(char command, int score_left, int score_right);
+void racket_move(char command, int &racket_left, int &racket_right);
+void ball_moution(int &ball_x, int &ball_y, int &ball_v_x, int &ball_v_y, int &score_left, int &score_right,
+                  int racket_left, int racket_right);
 void congratulations(int score_left, int score_right);
 void pong();
 
@@ -90,6 +93,52 @@ int game_state(char command, int score_left, int score_right) {
     return game;
 }
 
+void racket_move(char command, int &racket_left, int &racket_right) {
+    if (command == RACKET_LEFT_UP && racket_left != BOUND_TOP + 1) {
+        racket_left--;
+    } else if (command == RACKET_LEFT_DOWN && racket_left != BOUND_BOT - 3) {
+        racket_left++;
+    } else if (command == RACKET_RIGHT_UP && racket_right != BOUND_TOP + 1) {
+        racket_right--;
+    } else if (command == RACKET_RIGHT_DOWN && racket_right != BOUND_BOT - 3) {
+        racket_right++;
+    }
+}
+
+void ball_moution(int &ball_x, int &ball_y, int &ball_v_x, int &ball_v_y, int &score_left, int &score_right,
+                  int racket_left, int racket_right) {
+    if (ball_x > RACKET_RIGHT_X) {
+        score_left++;
+        ball_x = BALL_X;
+        ball_y = BALL_Y;
+    } else if (ball_x < RACKET_LEFT_X) {
+        score_right++;
+        ball_x = BALL_X;
+        ball_y = BALL_Y;
+    } else if (ball_x == RACKET_RIGHT_X - 1 &&
+               (ball_y == racket_right || ball_y == racket_right + 1 || ball_y == racket_right + 2)) {
+        ball_v_x = -1;
+        ball_x += ball_v_x;
+        ball_y += ball_v_y;
+    } else if (ball_x == RACKET_LEFT_X + 1 &&
+               (ball_y == racket_left || ball_y == racket_left + 1 || ball_y == racket_left + 2)) {
+        ball_v_x = 1;
+        ball_x += ball_v_x;
+        ball_y += ball_v_y;
+    } else if ((ball_x != RACKET_RIGHT_X - 1 || ball_x != RACKET_LEFT_X + 1) && ball_y == BOUND_BOT - 1) {
+        ball_v_y = -1;
+        ball_y += ball_v_y;
+        ball_x += ball_v_x;
+    } else if ((ball_x != RACKET_RIGHT_X - 1 || ball_x != RACKET_LEFT_X + 1) && ball_y == BOUND_TOP + 1) {
+        ball_v_y = 1;
+        ball_y += ball_v_y;
+        ball_x += ball_v_x;
+    } else {
+        ball_x += ball_v_x;
+        ball_y += ball_v_y;
+    }
+}
+
 void congratulations(int score_left, int score_right) {
     cout << "\033[2J\033[H";
     if (score_left == END_GAME) {
@@ -100,52 +149,17 @@ void congratulations(int score_left, int score_right) {
 }
 
 void pong() {
-    int game = TRUE, score_left = 0, score_right = 11, racket_left = RACKET_LEFT_Y,
+    int game = TRUE, score_left = 0, score_right = 0, racket_left = RACKET_LEFT_Y,
         racket_right = RACKET_RIGHT_Y, ball_x = BALL_X, ball_y = BALL_Y, ball_v_x = 1, ball_v_y = 1;
     draw_window(score_left, score_right, racket_left, racket_right, ball_x, ball_y);
     while (game) {
         char command = getchar();
         if (command == SPACE) {
-            if (ball_x > RACKET_RIGHT_X) {
-                score_left++;
-                ball_x = BALL_X;
-                ball_y = BALL_Y;
-            } else if (ball_x < RACKET_LEFT_X) {
-                score_right++;
-                ball_x = BALL_X;
-                ball_y = BALL_Y;
-            } else if (ball_x == RACKET_RIGHT_X - 1 &&
-                       (ball_y == racket_right || ball_y == racket_right + 1 || ball_y == racket_right + 2)) {
-                ball_v_x = -1;
-                ball_x += ball_v_x;
-                ball_y += ball_v_y;
-            } else if (ball_x == RACKET_LEFT_X + 1 &&
-                       (ball_y == racket_left || ball_y == racket_left + 1 || ball_y == racket_left + 2)) {
-                ball_v_x = 1;
-                ball_x += ball_v_x;
-                ball_y += ball_v_y;
-            } else if ((ball_x != RACKET_RIGHT_X - 1 || ball_x != RACKET_LEFT_X + 1) &&
-                       ball_y == BOUND_BOT - 1) {
-                ball_v_y = -1;
-                ball_y += ball_v_y;
-                ball_x += ball_v_x;
-            } else if ((ball_x != RACKET_RIGHT_X - 1 || ball_x != RACKET_LEFT_X + 1) &&
-                       ball_y == BOUND_TOP + 1) {
-                ball_v_y = 1;
-                ball_y += ball_v_y;
-                ball_x += ball_v_x;
-            } else {
-                ball_x += ball_v_x;
-                ball_y += ball_v_y;
-            }
-        } else if (command == RACKET_LEFT_UP && racket_left != BOUND_TOP + 1) {
-            racket_left--;
-        } else if (command == RACKET_LEFT_DOWN && racket_left != BOUND_BOT - 3) {
-            racket_left++;
-        } else if (command == RACKET_RIGHT_UP && racket_right != BOUND_TOP + 1) {
-            racket_right--;
-        } else if (command == RACKET_RIGHT_DOWN && racket_right != BOUND_BOT - 3) {
-            racket_right++;
+            ball_moution(ball_x, ball_y, ball_v_x, ball_v_y, score_left, score_right, racket_left,
+                         racket_right);
+        } else if (command == RACKET_LEFT_UP || command == RACKET_LEFT_DOWN || command == RACKET_RIGHT_UP ||
+                   command == RACKET_RIGHT_DOWN) {
+            racket_move(command, racket_left, racket_right);
         }
         game = game_state(command, score_left, score_right);
         draw_window(score_left, score_right, racket_left, racket_right, ball_x, ball_y);
