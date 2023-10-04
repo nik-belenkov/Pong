@@ -161,11 +161,10 @@ void pong() {
     while (game) {
         char command = getch();
         if (command == RACKET_LEFT_UP || command == RACKET_LEFT_DOWN || command == RACKET_RIGHT_UP ||
-                   command == RACKET_RIGHT_DOWN) {
+            command == RACKET_RIGHT_DOWN) {
             racket_move(command, racket_left, racket_right);
         }
-        ball_moution(ball_x, ball_y, ball_v_x, ball_v_y, score_left, score_right, racket_left,
-                         racket_right);
+        ball_moution(ball_x, ball_y, ball_v_x, ball_v_y, score_left, score_right, racket_left, racket_right);
         usleep(80000);
         game = game_state(command, score_left, score_right);
         draw_window(score_left, score_right, racket_left, racket_right, ball_x, ball_y);
