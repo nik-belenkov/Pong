@@ -35,15 +35,14 @@ void congratulations(int score_left, int score_right);
 void pong();
 
 int main() {
-    initscr();
-    noecho();
-    nodelay(stdscr, 1);
     pong();
-    endwin();
     RETURN;
 }
 
 void draw_window(int score_left, int score_right, int racket_left, int racket_right, int ball_x, int ball_y) {
+    start_color();
+    init_pair(1, COLOR_WHITE, COLOR_GREEN);
+    attron(COLOR_PAIR(1));
     move(0, 0);
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
@@ -66,6 +65,7 @@ void draw_window(int score_left, int score_right, int racket_left, int racket_ri
         printw("\n");
     }
     refresh();
+    attroff(COLOR_PAIR(1));
 }
 
 void draw_score(int x, int score_left, int score_right) {
@@ -145,29 +145,40 @@ void ball_moution(int &ball_x, int &ball_y, int &ball_v_x, int &ball_v_y, int &s
 }
 
 void congratulations(int score_left, int score_right) {
-    move(0, 0);
     if (score_left == END_GAME) {
-        printw("Congratulations Racket Left Player! You Win!\n");
+        printw("%65s", "Congratulations Racket Left Player! You Win!\n");
     } else if (score_right == END_GAME) {
-        printw("Congratulations Racket Right Player! You Win!\n");
+        printw("%65s", "Congratulations Racket Right Player! You Win!\n");
     }
     refresh();
 }
 
 void pong() {
+    initscr();
+    noecho();
+    nodelay(stdscr, 1);
     int game = TRUE, score_left = 0, score_right = 0, racket_left = RACKET_LEFT_Y,
         racket_right = RACKET_RIGHT_Y, ball_x = BALL_X, ball_y = BALL_Y, ball_v_x = 1, ball_v_y = 1;
+    int speed = 80000;
     draw_window(score_left, score_right, racket_left, racket_right, ball_x, ball_y);
     while (game) {
         char command = getch();
-        if (command == RACKET_LEFT_UP || command == RACKET_LEFT_DOWN || command == RACKET_RIGHT_UP ||
-            command == RACKET_RIGHT_DOWN) {
+        if ((command == RACKET_LEFT_UP || command == RACKET_LEFT_DOWN || command == RACKET_RIGHT_UP ||
+             command == RACKET_RIGHT_DOWN) &&
+            speed > 30000) {
             racket_move(command, racket_left, racket_right);
+            speed -= 10000;
+        } else if (speed < 90000) {
+            speed += 10000;
         }
         ball_moution(ball_x, ball_y, ball_v_x, ball_v_y, score_left, score_right, racket_left, racket_right);
-        usleep(80000);
+        usleep(speed);
         game = game_state(command, score_left, score_right);
         draw_window(score_left, score_right, racket_left, racket_right, ball_x, ball_y);
     }
-    congratulations(score_left, score_right);
+    if (score_left == 21 || score_right == 21) {
+        congratulations(score_left, score_right);
+        usleep(2000000);
+    }
+    endwin();
 }
